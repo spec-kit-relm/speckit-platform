@@ -1,0 +1,10 @@
+{
+  "_comment": "Repositories that receive governance sync PRs. kind selects the team preset (relm-<kind>).",
+  "repositories": [
+    { "name": "product-specs",     "kind": "product"  },
+    { "name": "orders-service",    "kind": "backend"  },
+    { "name": "inventory-service", "kind": "backend"  },
+    { "name": "web-storefront",    "kind": "frontend" },
+    { "name": "e2e-tests",         "kind": "qa"       }
+  ]
+}

@@ -1,0 +1,83 @@
+# Reusable workflow: contract-first checks (ORG-3, BE-1, BE-4).
+#   - every owned contract in contracts/*.yaml lints against the Relm ruleset
+#   - a changed owned contract must bump info.version
+#   - breaking OpenAPI changes fail unless the MAJOR version changed
+#   - vendored copies (contracts/vendor/**) change only with provenance in contracts/vendor/README.md
+name: Relm contract check
+
+on:
+  workflow_call:
+    inputs:
+      platform-ref:
+        type: string
+        default: "v1"
+
+permissions:
+  contents: read
+
+jobs:
+  contract-check:
+    name: contract-check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/checkout@v4
+        with:
+          repository: spec-kit-relm/speckit-platform
+          ref: ${{ inputs.platform-ref }}
+          path: .relm-platform
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Lint owned contracts (Redocly, Relm ruleset)
+        run: |
+          shopt -s nullglob
+          files=(contracts/*.yaml contracts/*.yml)
+          openapi=()
+          for f in "${files[@]}"; do grep -q '^openapi:' "$f" && openapi+=("$f"); done
+          if [ ${#openapi[@]} -eq 0 ]; then echo "no owned OpenAPI contracts"; exit 0; fi
+          npx --yes @redocly/cli@1 lint --config .relm-platform/contracts/redocly.yaml "${openapi[@]}"
+
+      - name: Lint owned event contracts (AsyncAPI)
+        run: |
+          shopt -s nullglob
+          for f in contracts/*.yaml contracts/*.yml; do
+            grep -q '^asyncapi:' "$f" || continue
+            npx --yes @asyncapi/cli@2 validate "$f"
+          done
+
+      - name: Version bump + vendored provenance
+        if: github.event_name == 'pull_request'
+        run: python .relm-platform/scripts/relm_sdd.py contract-check --base "origin/${{ github.base_ref }}"
+
+      - name: Breaking-change detection (oasdiff)
+        if: github.event_name == 'pull_request'
+        run: |
+          set -euo pipefail
+          base="origin/${{ github.base_ref }}"
+          status=0
+          for f in $(git diff --name-only "$base"...HEAD -- 'contracts/*.yaml' | grep -v '^contracts/vendor/' || true); do
+            [ -f "$f" ] && grep -q '^openapi:' "$f" || continue
+            git show "$base:$f" > /tmp/base.yaml 2>/dev/null || continue
+            old_major=$(grep -m1 -A3 '^info:' /tmp/base.yaml | sed -n 's/.*version: *"\{0,1\}\([0-9]*\)\..*/\1/p')
+            new_major=$(grep -m1 -A3 '^info:' "$f" | sed -n 's/.*version: *"\{0,1\}\([0-9]*\)\..*/\1/p')
+            echo "::group::$f (major $old_major -> $new_major)"
+            if docker run --rm -v "$PWD:/w" -v /tmp:/t tufin/oasdiff breaking /t/base.yaml "/w/$f" --fail-on ERR; then
+              echo "no breaking changes"
+            elif [ "$new_major" != "$old_major" ]; then
+              echo "::warning file=$f::breaking changes accepted because MAJOR changed — follow expand→migrate→contract"
+            else
+              echo "::error file=$f::breaking change without a MAJOR version bump (ORG-3)"; status=1
+            fi
+            echo "::endgroup::"
+          done
+          exit $status

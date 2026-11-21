@@ -1,0 +1,39 @@
+schema_version: "1.0"
+
+preset:
+  id: "relm-qa"
+  name: "Relm Quality Engineering"
+  version: "1.0.0"
+  description: "Relm QA overlay: constitution Part B (QA-1..QA-6), test-strategy plan section and QA checklist conventions."
+  author: "Relm SDD Guild"
+  repository: "https://github.com/spec-kit-relm/speckit-platform"
+  license: "MIT"
+
+requires:
+  speckit_version: ">=1.2.0"
+
+# Install with HIGHER precedence than relm-org (priority 10 vs 20): these templates are
+# appended on top of relm-org's composed templates.
+provides:
+  templates:
+    - type: "template"
+      name: "constitution-template"
+      file: "templates/constitution-template.md"
+      description: "Appends Part B (team overlay) and the Part C skeleton — generated from governance/"
+      strategy: "append"
+
+    - type: "template"
+      name: "plan-template"
+      file: "templates/plan-qa.md"
+      description: "Appends the scenario-to-test strategy section"
+      strategy: "append"
+
+    - type: "template"
+      name: "checklist-template"
+      file: "templates/checklist-qa.md"
+      description: "Appends Relm checklist conventions (human-ticked, scenario references)"
+      strategy: "append"
+tags:
+  - "relm"
+  - "qa"
+  - "governance"

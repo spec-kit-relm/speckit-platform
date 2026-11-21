@@ -1,0 +1,6 @@
+# Relm CODEOWNERS template — copy to .github/CODEOWNERS and adapt.
+*                              @spec-kit-relm/<owning-team>
+/.specify/memory/              @spec-kit-relm/<owning-team> @spec-kit-relm/sdd-guild
+/contracts/                    @spec-kit-relm/<owning-team> @spec-kit-relm/architecture
+/specs/                        @spec-kit-relm/<owning-team>
+/AGENTS.md                     @spec-kit-relm/<owning-team> @spec-kit-relm/sdd-guild

@@ -1,0 +1,25 @@
+# Relm API ruleset (BE-1). Used by the reusable contract-check workflow.
+extends:
+  - recommended
+rules:
+  info-contact: error
+  operation-operationId: error
+  operation-4xx-response: error
+  operation-summary: error
+  no-server-example.com: off
+  rule/problem-json-errors:
+    subject:
+      type: Response
+      filterInParentKeys: ["400", "401", "403", "404", "409", "422", "429", "500", "503"]
+    assertions:
+      required: [content]
+    message: "4xx/5xx responses must declare a body (application/problem+json, RFC 9457)"
+    severity: error
+  rule/write-ops-idempotency-key:
+    subject:
+      type: Operation
+      filterInParentKeys: [post, patch]
+    assertions:
+      required: [parameters]
+    message: "POST/PATCH operations must declare parameters (Idempotency-Key header, BE-2)"
+    severity: error

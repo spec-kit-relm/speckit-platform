@@ -1,0 +1,37 @@
+schema_version: "1.0"
+
+preset:
+  id: "relm-product"
+  name: "Relm Product Specs"
+  version: "1.0.0"
+  description: "Relm product-level overlay for product-specs: constitution Part B (PRD-1..PRD-6) plus impact-map and contract-lock templates."
+  author: "Relm SDD Guild"
+  repository: "https://github.com/spec-kit-relm/speckit-platform"
+  license: "MIT"
+
+requires:
+  speckit_version: ">=1.2.0"
+
+# Install with HIGHER precedence than relm-org (priority 10 vs 20): these templates are
+# appended on top of relm-org's composed templates.
+provides:
+  templates:
+    - type: "template"
+      name: "constitution-template"
+      file: "templates/constitution-template.md"
+      description: "Appends Part B (team overlay) and the Part C skeleton — generated from governance/"
+      strategy: "append"
+
+    - type: "template"
+      name: "impact-template"
+      file: "templates/impact-template.md"
+      description: "Impact map: participating repos, interface owners, rollout and rollback order"
+
+    - type: "template"
+      name: "contracts-lock-template"
+      file: "templates/contracts-lock-template.md"
+      description: "Locked contract versions for one product feature"
+tags:
+  - "relm"
+  - "product"
+  - "governance"

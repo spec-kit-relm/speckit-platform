@@ -1,0 +1,33 @@
+schema_version: "1.0"
+
+preset:
+  id: "relm-backend"
+  name: "Relm Backend Team"
+  version: "1.0.0"
+  description: "Relm backend overlay: constitution Part B (BE-1..BE-6) and backend plan sections (idempotency, data changes, resilience)."
+  author: "Relm SDD Guild"
+  repository: "https://github.com/spec-kit-relm/speckit-platform"
+  license: "MIT"
+
+requires:
+  speckit_version: ">=1.2.0"
+
+# Install with HIGHER precedence than relm-org (priority 10 vs 20): these templates are
+# appended on top of relm-org's composed templates.
+provides:
+  templates:
+    - type: "template"
+      name: "constitution-template"
+      file: "templates/constitution-template.md"
+      description: "Appends Part B (team overlay) and the Part C skeleton — generated from governance/"
+      strategy: "append"
+
+    - type: "template"
+      name: "plan-template"
+      file: "templates/plan-backend.md"
+      description: "Appends backend plan sections"
+      strategy: "append"
+tags:
+  - "relm"
+  - "backend"
+  - "governance"

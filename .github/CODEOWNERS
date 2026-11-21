@@ -1,0 +1,6 @@
+*                         @spec-kit-relm/sdd-guild
+/governance/org-baseline.md @spec-kit-relm/sdd-guild @spec-kit-relm/architecture @spec-kit-relm/backend @spec-kit-relm/frontend @spec-kit-relm/qa
+/governance/overlays/backend.md  @spec-kit-relm/sdd-guild @spec-kit-relm/backend
+/governance/overlays/frontend.md @spec-kit-relm/sdd-guild @spec-kit-relm/frontend
+/governance/overlays/qa.md       @spec-kit-relm/sdd-guild @spec-kit-relm/qa
+/governance/overlays/product.md  @spec-kit-relm/sdd-guild @spec-kit-relm/architecture

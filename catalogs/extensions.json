@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0",
+  "updated_at": "2026-11-21T00:00:00Z",
+  "catalog_url": "https://raw.githubusercontent.com/spec-kit-relm/speckit-platform/main/catalogs/extensions.json",
+  "extensions": {
+    "relm": {
+      "id": "relm",
+      "name": "Relm Cross-Repo Workflow",
+      "version": "1.0.0",
+      "description": "Relm commands for multi-repo SDD: impact maps, central-spec handoff to service repos, and PR descriptions with gate evidence.",
+      "author": "Relm SDD Guild",
+      "repository": "https://github.com/spec-kit-relm/speckit-platform",
+      "documentation": "https://github.com/spec-kit-relm/speckit-platform/blob/main/extensions/relm/README.md",
+      "download_url": "https://github.com/spec-kit-relm/speckit-platform/releases/download/v1.0.0/relm-1.0.0.zip",
+      "sha256": "e8df11bb24e3421fb1dbf2f2af5b35ff491f55f411940790165f76c96ec3862a",
+      "license": "MIT",
+      "requires": {
+        "speckit_version": ">=1.2.0"
+      },
+      "provides": {
+        "templates": 0,
+        "commands": 3
+      },
+      "tags": [
+        "relm",
+        "internal"
+      ]
+    }
+  }
+}

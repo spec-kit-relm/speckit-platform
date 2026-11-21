@@ -1,0 +1,122 @@
+{
+  "schema_version": "1.0",
+  "updated_at": "2026-11-21T00:00:00Z",
+  "catalog_url": "https://raw.githubusercontent.com/spec-kit-relm/speckit-platform/main/catalogs/presets.json",
+  "presets": {
+    "relm-backend": {
+      "id": "relm-backend",
+      "name": "Relm Backend Team",
+      "version": "1.0.0",
+      "description": "Relm backend overlay: constitution Part B (BE-1..BE-6) and backend plan sections (idempotency, data changes, resilience).",
+      "author": "Relm SDD Guild",
+      "repository": "https://github.com/spec-kit-relm/speckit-platform",
+      "documentation": "https://github.com/spec-kit-relm/speckit-platform/blob/main/presets/relm-backend/README.md",
+      "download_url": "https://github.com/spec-kit-relm/speckit-platform/releases/download/v1.0.0/relm-backend-1.0.0.zip",
+      "sha256": "5571fb58ee56d230424a9911804064d29f7c55f75a2f4c3fed8510fe482afbbe",
+      "license": "MIT",
+      "requires": {
+        "speckit_version": ">=1.2.0"
+      },
+      "provides": {
+        "templates": 2,
+        "commands": 0
+      },
+      "tags": [
+        "relm",
+        "internal"
+      ]
+    },
+    "relm-frontend": {
+      "id": "relm-frontend",
+      "name": "Relm Frontend Team",
+      "version": "1.0.0",
+      "description": "Relm frontend overlay: constitution Part B (FE-1..FE-6) and frontend plan sections (UI states, accessibility, performance, tracking).",
+      "author": "Relm SDD Guild",
+      "repository": "https://github.com/spec-kit-relm/speckit-platform",
+      "documentation": "https://github.com/spec-kit-relm/speckit-platform/blob/main/presets/relm-frontend/README.md",
+      "download_url": "https://github.com/spec-kit-relm/speckit-platform/releases/download/v1.0.0/relm-frontend-1.0.0.zip",
+      "sha256": "ff168af043cb8bfacf049f1180b7aad521841e187535f1fb2894456530d4d70c",
+      "license": "MIT",
+      "requires": {
+        "speckit_version": ">=1.2.0"
+      },
+      "provides": {
+        "templates": 2,
+        "commands": 0
+      },
+      "tags": [
+        "relm",
+        "internal"
+      ]
+    },
+    "relm-org": {
+      "id": "relm-org",
+      "name": "Relm Organization Baseline",
+      "version": "1.0.0",
+      "description": "Relm org-wide SDD standard: constitution Part A, traceability in specs, delivery sections in plans, mandatory verification phase in tasks.",
+      "author": "Relm SDD Guild",
+      "repository": "https://github.com/spec-kit-relm/speckit-platform",
+      "documentation": "https://github.com/spec-kit-relm/speckit-platform/blob/main/presets/relm-org/README.md",
+      "download_url": "https://github.com/spec-kit-relm/speckit-platform/releases/download/v1.0.0/relm-org-1.0.0.zip",
+      "sha256": "0aa79ad3d7d79204937c7e65109b81b18e33d057b702073ebd4e285a2b8a7f29",
+      "license": "MIT",
+      "requires": {
+        "speckit_version": ">=1.2.0"
+      },
+      "provides": {
+        "templates": 4,
+        "commands": 4
+      },
+      "tags": [
+        "relm",
+        "internal"
+      ]
+    },
+    "relm-product": {
+      "id": "relm-product",
+      "name": "Relm Product Specs",
+      "version": "1.0.0",
+      "description": "Relm product-level overlay for product-specs: constitution Part B (PRD-1..PRD-6) plus impact-map and contract-lock templates.",
+      "author": "Relm SDD Guild",
+      "repository": "https://github.com/spec-kit-relm/speckit-platform",
+      "documentation": "https://github.com/spec-kit-relm/speckit-platform/blob/main/presets/relm-product/README.md",
+      "download_url": "https://github.com/spec-kit-relm/speckit-platform/releases/download/v1.0.0/relm-product-1.0.0.zip",
+      "sha256": "dd7d7768d95aa0f12ba4cde7a4bd5b8c5c54c7b715fbbec310b76c5a2cd86a26",
+      "license": "MIT",
+      "requires": {
+        "speckit_version": ">=1.2.0"
+      },
+      "provides": {
+        "templates": 3,
+        "commands": 0
+      },
+      "tags": [
+        "relm",
+        "internal"
+      ]
+    },
+    "relm-qa": {
+      "id": "relm-qa",
+      "name": "Relm Quality Engineering",
+      "version": "1.0.0",
+      "description": "Relm QA overlay: constitution Part B (QA-1..QA-6), test-strategy plan section and QA checklist conventions.",
+      "author": "Relm SDD Guild",
+      "repository": "https://github.com/spec-kit-relm/speckit-platform",
+      "documentation": "https://github.com/spec-kit-relm/speckit-platform/blob/main/presets/relm-qa/README.md",
+      "download_url": "https://github.com/spec-kit-relm/speckit-platform/releases/download/v1.0.0/relm-qa-1.0.0.zip",
+      "sha256": "bfeeb1fccbef347493257b4bdb70557c72110f7624aaa2b59c7cc385a63d1a0d",
+      "license": "MIT",
+      "requires": {
+        "speckit_version": ">=1.2.0"
+      },
+      "provides": {
+        "templates": 3,
+        "commands": 0
+      },
+      "tags": [
+        "relm",
+        "internal"
+      ]
+    }
+  }
+}

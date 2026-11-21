@@ -1,0 +1,71 @@
+# Reusable workflow: Relm SDD gates. Called from every repository's .github/workflows/sdd.yml:
+#
+#   jobs:
+#     sdd:
+#       uses: spec-kit-relm/speckit-platform/.github/workflows/sdd-gates.yml@v1
+#       with: { repo-kind: backend }
+#
+# Gates: agent-files-check, constitution-check (drift), spec-lint, pr-check (ORG-1, ORG-9).
+name: Relm SDD gates
+
+on:
+  workflow_call:
+    inputs:
+      repo-kind:
+        description: "product | backend | frontend | qa"
+        type: string
+        required: true
+      platform-ref:
+        description: "speckit-platform ref holding the governance version to check against"
+        type: string
+        default: "v1"
+      require-local-spec:
+        description: "Feature PRs must contain specs/NNN-*/ in this repository"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  sdd-gates:
+    name: sdd-gates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check out speckit-platform (${{ inputs.platform-ref }})
+        uses: actions/checkout@v4
+        with:
+          repository: spec-kit-relm/speckit-platform
+          ref: ${{ inputs.platform-ref }}
+          path: .relm-platform
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: agent-files-check
+        run: python .relm-platform/scripts/relm_sdd.py agent-files-check
+
+      - name: constitution-check (drift against governance ${{ inputs.platform-ref }})
+        run: python .relm-platform/scripts/relm_sdd.py constitution-check --governance .relm-platform/governance
+
+      - name: spec-lint
+        run: |
+          kind=service
+          [ "${{ inputs.repo-kind }}" = "product" ] && kind=product
+          python .relm-platform/scripts/relm_sdd.py spec-lint --kind "$kind"
+
+      - name: pr-check
+        if: github.event_name == 'pull_request'
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+        run: |
+          flag=""
+          [ "${{ inputs.require-local-spec }}" = "true" ] && flag="--require-spec"
+          kind=service
+          [ "${{ inputs.repo-kind }}" = "product" ] && kind=product
+          python .relm-platform/scripts/relm_sdd.py pr-check $flag --kind "$kind"
