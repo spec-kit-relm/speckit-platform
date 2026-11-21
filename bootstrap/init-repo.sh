@@ -45,7 +45,7 @@ git rev-parse --show-toplevel >/dev/null 2>&1 || { echo "run inside a git reposi
 
 echo "==> specify init ($AGENT, git extension)"
 if [ ! -d .specify ]; then
-  specify init --here --force --non-interactive --integration "$AGENT" --extension git
+  specify init --here --force --non-interactive --ignore-agent-tools --integration "$AGENT" --extension git
 else
   echo "    .specify/ exists — skipping init"
 fi
