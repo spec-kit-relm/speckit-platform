@@ -4,7 +4,7 @@
 for multi-repo work, and the CI gates every Relm repository runs.**
 
 Owner: `@spec-kit-relm/sdd-guild` · Pinned Spec Kit CLI: **v1.4.3** (`SPECKIT_VERSION`) ·
-Platform version: **v1.1.0** (`VERSION`; repositories use the floating tag `v1`)
+Platform version: **v1.1.1** (`VERSION`; repositories use the floating tag `v1`)
 
 > New here? Read [`sdd-handbook`](https://github.com/spec-kit-relm/sdd-handbook) first: it explains
 > the process. This repository holds the **machinery** that makes the process the default.
