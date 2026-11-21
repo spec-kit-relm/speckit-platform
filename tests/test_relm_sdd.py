@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 import relm_sdd  # noqa: E402
 
-GOV = ROOT / "governance"
+PRESETS = ROOT / "presets"
 
 
 def run(*argv, env=None):
@@ -30,12 +30,18 @@ def run(*argv, env=None):
     return code, out.getvalue()
 
 
-def constitution(team="BACKEND", org_body=None):
-    org = (GOV / "org-baseline.md").read_text()
+def block(preset):
+    text = (PRESETS / preset / "templates" / "constitution-template.md").read_text()
+    return relm_sdd.BLOCK_RE.search(text).group(0)
+
+
+def constitution(team="backend", org_body=None, org_meta=None):
+    org = block("relm-org")
     if org_body:
         org = org.replace("### ORG-1 Spec before code", org_body)
-    overlay = (GOV / "overlays" / f"{team.lower()}.md").read_text()
-    return (f"# demo Constitution\n\n{org}\n{overlay}\n## Part C — Repository Amendments (MUST)\n"
+    if org_meta:
+        org = org.replace("presets/relm-org/templates/constitution-template.md", org_meta)
+    return (f"# demo Constitution\n\n{org}\n\n{block('relm-' + team)}\n\n## Part C — Repository Amendments (MUST)\n"
             "### DEMO-1 Thing\nDo it.\n*Check: CI*\n\n**Version**: 1.0.0\n")
 
 
@@ -71,20 +77,27 @@ class ConstitutionTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             p = Path(d) / "constitution.md"
             p.write_text(text)
-            return run("constitution-check", "--constitution", str(p), "--governance", str(GOV))
+            return run("constitution-check", "--constitution", str(p), "--platform", str(ROOT))
 
     def test_current_constitution_passes(self):
         code, out = self.check(constitution())
         self.assertEqual(code, 0, out)
 
+    def test_marker_metadata_may_differ(self):
+        code, out = self.check(constitution(org_meta="governance/org-baseline.md"))
+        self.assertEqual(code, 0, out)
+
+    def test_older_major_fails(self):
+        code, out = self.check(constitution().replace("RELM:ORG-BASELINE v1.0.0", "RELM:ORG-BASELINE v0.9.0"))
+        self.assertEqual(code, 1)
+
     def test_local_edit_of_part_a_fails(self):
         code, out = self.check(constitution(org_body="### ORG-1 Spec before code (relaxed)"))
         self.assertEqual(code, 1)
-        self.assertIn("edited locally", out)
+        self.assertIn("differs from speckit-platform", out)
 
     def test_missing_team_block_fails(self):
-        org = (GOV / "org-baseline.md").read_text()
-        code, out = self.check(f"# x\n{org}\n## Part C\n")
+        code, out = self.check(f"# x\n{block('relm-org')}\n## Part C\n")
         self.assertEqual(code, 1)
         self.assertIn("TEAM-*", out)
 
@@ -92,8 +105,8 @@ class ConstitutionTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             p = Path(d) / "constitution.md"
             p.write_text(constitution(org_body="### ORG-1 tampered"))
-            run("constitution-sync", "--constitution", str(p), "--governance", str(GOV), "--write")
-            code, out = run("constitution-check", "--constitution", str(p), "--governance", str(GOV))
+            run("constitution-sync", "--constitution", str(p), "--platform", str(ROOT), "--write")
+            code, out = run("constitution-check", "--constitution", str(p), "--platform", str(ROOT))
             self.assertEqual(code, 0, out)
 
 
@@ -149,10 +162,17 @@ class PrCheckTests(unittest.TestCase):
         self.assertEqual(self.pr("bump deps", ["lane:chore"])[0], 0)
 
 
-class BuildTests(unittest.TestCase):
-    def test_generated_files_are_current(self):
-        code, out = run("build", "--check")
+class GovernanceLintTests(unittest.TestCase):
+    def test_preset_blocks_are_well_formed(self):
+        code, out = run("governance-lint")
         self.assertEqual(code, 0, out)
+
+    def test_governance_alias_still_works(self):
+        with tempfile.TemporaryDirectory() as d:
+            p = Path(d) / "constitution.md"
+            p.write_text(constitution())
+            code, out = run("constitution-check", "--constitution", str(p), "--governance", str(ROOT / "governance"))
+            self.assertEqual(code, 0, out)
 
 
 if __name__ == "__main__":

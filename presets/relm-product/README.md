@@ -8,7 +8,9 @@ Relm product-level overlay for product-specs: constitution Part B (PRD-1..PRD-6)
 | template `impact-template` | replace | [`templates/impact-template.md`](templates/impact-template.md) |
 | template `contracts-lock-template` | replace | [`templates/contracts-lock-template.md`](templates/contracts-lock-template.md) |
 
-Generated files: `templates/constitution-template.md` is generated from `governance/` by
-`python scripts/relm_sdd.py build` — never edit it by hand.
+**`templates/constitution-template.md` is the canonical rule text** for this layer. To change a
+rule, edit the block there and bump the version in its `BEGIN RELM:` marker — see
+[`governance/README.md`](../../governance/README.md).
 
-Install: `specify preset add relm-product --priority 10` (Relm catalog) or `bootstrap/init-repo.sh`.
+Install: normally via `bootstrap/init-repo.sh`; by hand from a checkout:
+`specify preset add --dev ../speckit-platform/presets/relm-product --priority 10`.

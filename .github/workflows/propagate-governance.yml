@@ -1,12 +1,12 @@
-# When governance changes are released, open a sync PR in every consumer repository
+# When a platform version is tagged (vX.Y.Z), open a sync PR in every consumer repository
 # (Parts A/B of .specify/memory/constitution.md + preset refresh). Requires the secret
 # RELM_GOVERNANCE_BOT_TOKEN: a fine-grained token / GitHub App with contents+pull-requests write
-# on the consumer repositories listed in governance/consumers.json.
+# on the consumer repositories listed in consumers.json.
 name: propagate-governance
 
 on:
-  release:
-    types: [published]
+  push:
+    tags: ["v[0-9]+.[0-9]+.[0-9]+"]
   workflow_dispatch:
 
 permissions:
@@ -20,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - id: r
-        run: echo "repos=$(python -c 'import json;print(json.dumps(json.load(open("governance/consumers.json"))["repositories"]))')" >> "$GITHUB_OUTPUT"
+        run: echo "repos=$(python -c 'import json;print(json.dumps(json.load(open("consumers.json"))["repositories"]))')" >> "$GITHUB_OUTPUT"
 
   sync:
     needs: list
@@ -43,7 +43,7 @@ jobs:
       - name: Sync constitution Parts A/B and refresh presets
         working-directory: target
         run: |
-          python ../platform/scripts/relm_sdd.py constitution-sync --write --governance ../platform/governance
+          python ../platform/scripts/relm_sdd.py constitution-sync --write --platform ../platform
           uv tool install specify-cli --from "git+https://github.com/github/spec-kit.git@v$(cat ../platform/SPECKIT_VERSION)"
           bash ../platform/bootstrap/init-repo.sh ${{ matrix.target.kind }} --platform ../platform
       - name: Open sync PR
@@ -51,11 +51,11 @@ jobs:
         with:
           path: target
           token: ${{ secrets.RELM_GOVERNANCE_BOT_TOKEN }}
-          branch: governance/sync-${{ github.event.release.tag_name || github.run_id }}
-          title: "governance: sync Relm SDD baseline ${{ github.event.release.tag_name }}"
+          branch: governance/sync-${{ github.ref_name }}
+          title: "governance: sync Relm SDD baseline ${{ github.ref_name }}"
           labels: lane:governance
           body: |
-            Automated sync from `spec-kit-relm/speckit-platform` ${{ github.event.release.tag_name }}.
+            Automated sync from `spec-kit-relm/speckit-platform` ${{ github.ref_name }}.
 
             - Parts A/B of `.specify/memory/constitution.md` replaced with the released governance blocks
             - Relm presets and the `relm` extension refreshed

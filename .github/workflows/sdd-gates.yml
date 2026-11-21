@@ -16,7 +16,7 @@ on:
         type: string
         required: true
       platform-ref:
-        description: "speckit-platform ref holding the governance version to check against"
+        description: "speckit-platform ref (tag) whose preset rule blocks the constitution is checked against"
         type: string
         default: "v1"
       require-local-spec:
@@ -50,7 +50,7 @@ jobs:
         run: python .relm-platform/scripts/relm_sdd.py agent-files-check
 
       - name: constitution-check (drift against governance ${{ inputs.platform-ref }})
-        run: python .relm-platform/scripts/relm_sdd.py constitution-check --governance .relm-platform/governance
+        run: python .relm-platform/scripts/relm_sdd.py constitution-check --platform .relm-platform
 
       - name: spec-lint
         run: |

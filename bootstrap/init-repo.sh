@@ -11,7 +11,6 @@
 #   4. installs the github and relm extensions
 #   5. seeds .specify/memory/constitution.md from the COMPOSED constitution template
 #      (only if the constitution is still an unedited placeholder)
-#   6. writes .specify/preset-catalogs.yml / extension-catalogs.yml pointing at the Relm catalog
 #
 # Afterwards: run /speckit.constitution to fill Part C, write AGENTS.md (see templates/),
 # add .github/workflows/sdd.yml (org workflow template "Relm SDD gates").
@@ -38,7 +37,7 @@ command -v specify >/dev/null || {
   exit 2; }
 INSTALLED="$(specify version 2>/dev/null | sed -n 's/.*CLI Version *\([0-9][0-9.]*\).*/\1/p' | head -1)"
 if [ "$INSTALLED" != "$SPECKIT_VERSION" ]; then
-  echo "warning: specify CLI $INSTALLED installed, Relm pins $SPECKIT_VERSION (see speckit-platform/VERSIONS.md)" >&2
+  echo "warning: specify CLI $INSTALLED installed, Relm pins $SPECKIT_VERSION (see speckit-platform/SPECKIT_VERSION)" >&2
 fi
 
 git rev-parse --show-toplevel >/dev/null 2>&1 || { echo "run inside a git repository" >&2; exit 2; }
@@ -68,29 +67,6 @@ if [ -f "$GIT_CFG" ]; then
   sed -i.bak 's/^commit_style: .*/commit_style: conventional/' "$GIT_CFG" && rm -f "$GIT_CFG.bak"
 fi
 
-echo "==> catalogs"
-cat > .specify/preset-catalogs.yml <<'EOF'
-# Relm private catalog first (install allowed), public catalogs discovery-only.
-catalogs:
-  - name: "relm"
-    url: "https://raw.githubusercontent.com/spec-kit-relm/speckit-platform/main/catalogs/presets.json"
-    priority: 1
-    install_allowed: true
-    description: "Relm SDD Guild presets (reviewed)"
-  - name: "default"
-    url: "https://raw.githubusercontent.com/github/spec-kit/main/presets/catalog.json"
-    priority: 10
-    install_allowed: true
-    description: "Spec Kit first-party presets"
-  - name: "community"
-    url: "https://raw.githubusercontent.com/github/spec-kit/main/presets/catalog.community.json"
-    priority: 20
-    install_allowed: false
-    description: "Community presets — discovery only, vet before use"
-EOF
-sed -e 's/presets\.json/extensions.json/; s/presets\/catalog/extensions\/catalog/g; s/presets (reviewed)/extensions (reviewed)/; s/first-party presets/first-party extensions/; s/Community presets/Community extensions/' \
-  .specify/preset-catalogs.yml > .specify/extension-catalogs.yml
-
 echo "==> constitution"
 CONST=.specify/memory/constitution.md
 if [ ! -f "$CONST" ] || grep -q '\[PRINCIPLE_1_NAME\]' "$CONST"; then
@@ -106,4 +82,4 @@ echo "Done. Next steps:"
 echo "  1. /speckit.constitution  — fill Part C (repository amendments) and the version line"
 echo "  2. copy $PLATFORM/templates/repo/AGENTS.md (and CLAUDE.md, copilot-instructions.md) and adapt"
 echo "  3. add the 'Relm SDD gates' workflow from the org workflow templates"
-echo "  4. python $PLATFORM/scripts/relm_sdd.py agent-files-check && python $PLATFORM/scripts/relm_sdd.py constitution-check --governance $PLATFORM/governance"
+echo "  4. python $PLATFORM/scripts/relm_sdd.py agent-files-check && python $PLATFORM/scripts/relm_sdd.py constitution-check --platform $PLATFORM"

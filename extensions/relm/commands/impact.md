@@ -18,7 +18,7 @@ $ARGUMENTS
 ## Steps
 
 1. Load the feature `spec.md`, `contracts/REGISTRY.md`, and `workspace/repositories.yml`
-   (the catalog of Relm repositories, their teams, and the interfaces they own).
+   (the list of Relm repositories, their teams, and the interfaces they own).
 2. Render the templates with the Spec Kit resolver so presets apply:
    ```bash
    source .specify/scripts/bash/common.sh

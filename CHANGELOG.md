@@ -3,6 +3,26 @@
 All notable changes to Relm's SDD toolchain. Governance block versions are listed separately
 because repositories pin them individually (see `governance/versions.json`).
 
+## [1.1.0] - 2026-11-22
+
+Lean layout: rely on Spec Kit presets as the single source of the rules.
+
+### Changed
+- The rule blocks in `presets/relm-*/templates/constitution-template.md` are now the canonical
+  text (BEGIN markers point there). Block versions are unchanged (v1.0.0).
+- `constitution-check` compares rule content only (marker metadata may differ) and takes
+  `--platform <checkout>`; `--governance <checkout>/governance` still works.
+- `propagate-governance.yml` runs on version tags instead of GitHub releases.
+- `governance/consumers.json` moved to `consumers.json`.
+
+### Removed
+- `governance/` rule copies and history snapshots, `relm_sdd.py build|package|catalog`,
+  bundles, private catalogs and the release workflow. Install from a checkout with
+  `bootstrap/init-repo.sh`.
+
+### Added
+- `relm_sdd.py governance-lint`; `bootstrap/protect-branches.sh`.
+
 ## [1.0.0] - 2026-11-21
 
 ### Governance

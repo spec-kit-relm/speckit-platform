@@ -8,7 +8,9 @@ Relm QA overlay: constitution Part B (QA-1..QA-6), test-strategy plan section an
 | template `plan-template` | append | [`templates/plan-qa.md`](templates/plan-qa.md) |
 | template `checklist-template` | append | [`templates/checklist-qa.md`](templates/checklist-qa.md) |
 
-Generated files: `templates/constitution-template.md` is generated from `governance/` by
-`python scripts/relm_sdd.py build` — never edit it by hand.
+**`templates/constitution-template.md` is the canonical rule text** for this layer. To change a
+rule, edit the block there and bump the version in its `BEGIN RELM:` marker — see
+[`governance/README.md`](../../governance/README.md).
 
-Install: `specify preset add relm-qa --priority 10` (Relm catalog) or `bootstrap/init-repo.sh`.
+Install: normally via `bootstrap/init-repo.sh`; by hand from a checkout:
+`specify preset add --dev ../speckit-platform/presets/relm-qa --priority 10`.

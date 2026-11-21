@@ -19,7 +19,7 @@ provides:
     - type: "template"
       name: "constitution-template"
       file: "templates/constitution-template.md"
-      description: "Appends Part B (team overlay) and the Part C skeleton — generated from governance/"
+      description: "Appends Part B (team overlay — the canonical team rules) and the Part C skeleton"
       strategy: "append"
 
     - type: "template"

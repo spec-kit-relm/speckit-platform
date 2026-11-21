@@ -19,7 +19,7 @@ provides:
     - type: "template"
       name: "constitution-template"
       file: "templates/constitution-template.md"
-      description: "Relm constitution skeleton with Part A (org baseline) — generated from governance/"
+      description: "Relm constitution skeleton with Part A (org baseline, ORG-1…ORG-9) — the canonical company rules"
       replaces: "constitution-template"
 
     - type: "template"

@@ -1,5 +1,5 @@
 
-<!-- BEGIN RELM:TEAM-FRONTEND v1.0.0 | source: spec-kit-relm/speckit-platform/governance/overlays/frontend.md | owner: @spec-kit-relm/frontend | DO NOT EDIT OUTSIDE speckit-platform -->
+<!-- BEGIN RELM:TEAM-FRONTEND v1.0.0 | source: spec-kit-relm/speckit-platform/presets/relm-frontend/templates/constitution-template.md | owner: @spec-kit-relm/frontend | DO NOT EDIT OUTSIDE speckit-platform -->
 ## Part B — Frontend Team Overlay (MUST)
 
 Applies to every user-facing application owned by `@spec-kit-relm/frontend`. Framework and

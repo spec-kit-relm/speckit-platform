@@ -1,5 +1,5 @@
 
-<!-- BEGIN RELM:TEAM-BACKEND v1.0.0 | source: spec-kit-relm/speckit-platform/governance/overlays/backend.md | owner: @spec-kit-relm/backend | DO NOT EDIT OUTSIDE speckit-platform -->
+<!-- BEGIN RELM:TEAM-BACKEND v1.0.0 | source: spec-kit-relm/speckit-platform/presets/relm-backend/templates/constitution-template.md | owner: @spec-kit-relm/backend | DO NOT EDIT OUTSIDE speckit-platform -->
 ## Part B — Backend Team Overlay (MUST)
 
 Applies to every backend service owned by `@spec-kit-relm/backend`. Stack-specific rules

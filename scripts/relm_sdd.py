@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
-"""relm-sdd — Relm's spec-driven-development guardrails.
+"""relm-sdd — Relm's spec-driven-development guardrails (stdlib only).
 
-One stdlib-only script, used three ways:
-  * by engineers locally          (python relm_sdd.py spec-lint)
-  * by the reusable CI workflows  (.github/workflows/sdd-gates.yml, contract-check.yml)
-  * by the SDD Guild              (build / package / catalog / constitution-sync)
+Used by engineers locally, by the reusable CI workflows (sdd-gates.yml, contract-check.yml), and by
+the governance propagation workflow.
+
+The canonical company and team rules live in the Relm presets themselves:
+  presets/relm-org/templates/constitution-template.md      -> RELM:ORG-BASELINE   (Part A)
+  presets/relm-<team>/templates/constitution-template.md   -> RELM:TEAM-<TEAM>    (Part B)
 
 Subcommands
-  build               Regenerate preset constitution templates + governance history snapshots
-  package             Build deterministic preset/extension zips into dist/
-  catalog             Regenerate catalogs/*.json (with sha256 of the deterministic zips)
-  constitution-check  Verify synced Part A/B blocks in a repo constitution (drift check)
-  constitution-sync   Replace Part A/B blocks with the current governance versions
+  governance-lint     Check the preset rule blocks are well-formed (platform CI)
+  constitution-check  Verify a repo constitution's Part A/B blocks against the presets (drift check)
+  constitution-sync   Replace a repo constitution's Part A/B blocks with the current preset blocks
   spec-lint           Lint specs/*/spec.md (traceability, Given/When/Then, clarifications)
   pr-check            Verify a pull request declares a feature or a lane (ORG-1, ORG-9)
   agent-files-check   Verify AGENTS.md / CLAUDE.md / copilot instructions / constitution exist
@@ -22,19 +22,14 @@ Exit code 0 = pass, 1 = rule violation, 2 = usage/config error.
 from __future__ import annotations
 
 import argparse
-import hashlib
-import io
 import json
 import os
 import re
 import subprocess
 import sys
-import zipfile
 from pathlib import Path
 
 PLATFORM_ROOT = Path(__file__).resolve().parent.parent
-ORG = "spec-kit-relm"
-PLATFORM_REPO = f"https://github.com/{ORG}/speckit-platform"
 
 BLOCK_RE = re.compile(
     r"<!-- BEGIN RELM:(?P<name>[A-Z0-9-]+) v(?P<version>\d+\.\d+\.\d+)(?P<meta>[^>]*)-->"
@@ -42,15 +37,15 @@ BLOCK_RE = re.compile(
     r"<!-- END RELM:(?P=name) -->",
     re.S,
 )
-FEATURE_ID_RE = re.compile(r"\bRELM-(\d+)\b")
 SEMVER_RE = re.compile(r"^(\d+)\.(\d+)\.(\d+)$")
 
-# Which team overlay each preset carries.
-TEAM_PRESETS = {
-    "relm-backend": "backend",
-    "relm-frontend": "frontend",
-    "relm-qa": "qa",
-    "relm-product": "product",
+# Which preset carries which governance block.
+BLOCK_PRESETS = {
+    "ORG-BASELINE": "relm-org",
+    "TEAM-BACKEND": "relm-backend",
+    "TEAM-FRONTEND": "relm-frontend",
+    "TEAM-QA": "relm-qa",
+    "TEAM-PRODUCT": "relm-product",
 }
 
 failures: list[str] = []
@@ -92,246 +87,76 @@ def semver(v: str) -> tuple[int, int, int]:
     return tuple(int(x) for x in m.groups())  # type: ignore[return-value]
 
 
-def fragment_path(governance: Path, name: str) -> Path:
-    if name == "ORG-BASELINE":
-        return governance / "org-baseline.md"
-    if name.startswith("TEAM-"):
-        return governance / "overlays" / f"{name[5:].lower()}.md"
-    raise KeyError(name)
+def resolve_platform(args: argparse.Namespace) -> Path:
+    """--platform <speckit-platform checkout>; --governance <checkout>/governance kept as an alias."""
+    if getattr(args, "platform", None):
+        root = Path(args.platform)
+    elif getattr(args, "governance", None):
+        g = Path(args.governance)
+        root = g.parent if g.name == "governance" else g
+    else:
+        root = PLATFORM_ROOT
+    if not (root / "presets" / "relm-org").is_dir():
+        print(f"speckit-platform checkout not found at {root} (expected presets/relm-org/)", file=sys.stderr)
+        sys.exit(2)
+    return root
 
 
-def read_fragment(path: Path) -> re.Match:
-    text = path.read_text(encoding="utf-8")
-    m = BLOCK_RE.search(text)
-    if not m:
-        raise ValueError(f"{path}: no RELM block found")
-    return m
-
-
-def current_fragments(governance: Path) -> dict[str, re.Match]:
-    out = {"ORG-BASELINE": read_fragment(governance / "org-baseline.md")}
-    for p in sorted((governance / "overlays").glob("*.md")):
-        m = read_fragment(p)
-        out[m["name"]] = m
+def preset_blocks(platform: Path) -> dict[str, re.Match]:
+    out: dict[str, re.Match] = {}
+    for name, preset in BLOCK_PRESETS.items():
+        path = platform / "presets" / preset / "templates" / "constitution-template.md"
+        if not path.exists():
+            continue
+        m = BLOCK_RE.search(path.read_text(encoding="utf-8"))
+        if m and m["name"] == name:
+            out[name] = m
     return out
 
 
-def history_path(governance: Path, name: str, version: str) -> Path:
-    return governance / "history" / name / f"{version}.md"
-
-
-# --------------------------------------------------------------------------- build
-CONSTITUTION_HEADER = """# [PROJECT_NAME] Constitution
-
-> **How this constitution is layered (Relm SDD).**
-> Part A is the organization baseline and Part B is the team overlay. Both are synced from
-> `spec-kit-relm/speckit-platform` and MUST NOT be edited in this repository. Part C holds this
-> repository's own amendments: they may add or tighten rules, never relax Parts A or B.
-> Every Spec Kit command reads this file; `/speckit.analyze` treats any MUST violation as CRITICAL.
-
-"""
-
-CONSTITUTION_PART_C = """
-## Part C — Repository Amendments (MUST)
-
-<!--
-  Owned by THIS repository. Replace the placeholders below with 3–6 rules that are specific
-  to this repository (stack, layout, domain invariants, interfaces it owns).
-  Rules: prefix IDs with the repo code (e.g. ORD-1), add or tighten only, name the check.
--->
-
-### [REPO_CODE]-1 [RULE_NAME]
-[RULE_DESCRIPTION]
-*Check: [CHECK]*
-
-### [REPO_CODE]-2 [RULE_NAME]
-[RULE_DESCRIPTION]
-*Check: [CHECK]*
-
-### Exceptions
-None. <!-- Format: | Rule | Exception | ADR | Owner | Expires | -->
-
-## Repository governance
-- Part C is amended by pull request in this repository, approved by the CODEOWNERS of
-  `.specify/memory/`, on a dedicated `governance/*` branch (never inside a feature branch).
-- Parts A and B change only through the automated governance sync pull request.
-
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-"""
-
-
-def cmd_build(args: argparse.Namespace) -> int:
-    gov = PLATFORM_ROOT / "governance"
-    frags = current_fragments(gov)
-    outputs: dict[Path, str] = {}
-
-    org = frags["ORG-BASELINE"]
-    outputs[PLATFORM_ROOT / "presets/relm-org/templates/constitution-template.md"] = (
-        CONSTITUTION_HEADER + org.group(0) + "\n"
-    )
-    for preset, team in TEAM_PRESETS.items():
-        m = frags[f"TEAM-{team.upper()}"]
-        outputs[PLATFORM_ROOT / f"presets/{preset}/templates/constitution-template.md"] = (
-            "\n" + m.group(0) + "\n" + CONSTITUTION_PART_C
-        )
-    # history snapshots: one immutable file per released version of every block
-    for name, m in frags.items():
-        outputs[history_path(gov, name, m["version"])] = m.group(0) + "\n"
-
-    # versions manifest consumed by humans, CI and the propagation bot
-    versions = {name: m["version"] for name, m in frags.items()}
-    outputs[gov / "versions.json"] = json.dumps(versions, indent=2, sort_keys=True) + "\n"
-
-    stale = 0
-    for path, content in outputs.items():
-        existing = path.read_text(encoding="utf-8") if path.exists() else None
-        if existing == content:
+# --------------------------------------------------------------------------- governance lint
+def cmd_governance_lint(args: argparse.Namespace) -> int:
+    platform = resolve_platform(args)
+    for name, preset in BLOCK_PRESETS.items():
+        rel = f"presets/{preset}/templates/constitution-template.md"
+        path = platform / rel
+        if not path.exists():
+            fail(f"{rel} is missing", rel)
             continue
-        is_history = "history" in path.parts
-        if is_history and existing is not None:
-            fail(f"history snapshot {path.relative_to(PLATFORM_ROOT)} differs from the current "
-                 f"fragment with the same version — bump the fragment version", str(path))
-            stale += 1
+        text = path.read_text(encoding="utf-8")
+        blocks = list(BLOCK_RE.finditer(text))
+        if len(blocks) != 1 or blocks[0]["name"] != name:
+            fail(f"{rel} must contain exactly one RELM:{name} block", rel)
             continue
-        if args.check:
-            fail(f"{path.relative_to(PLATFORM_ROOT)} is stale — run `python scripts/relm_sdd.py build`",
-                 str(path))
-            stale += 1
-        else:
-            path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(content, encoding="utf-8")
-            ok(f"wrote {path.relative_to(PLATFORM_ROOT)}")
-    if not stale:
-        ok("presets and governance history are up to date")
-    return finish()
-
-
-# --------------------------------------------------------------------------- package / catalog
-FIXED_TS = (2026, 1, 1, 0, 0, 0)
-SKIP = {".DS_Store", "__pycache__"}
-
-
-def deterministic_zip(src: Path) -> bytes:
-    buf = io.BytesIO()
-    # ZIP_STORED + fixed modes: byte-identical on every machine (deflate output varies across zlib builds)
-    with zipfile.ZipFile(buf, "w", zipfile.ZIP_STORED) as zf:
-        for p in sorted(src.rglob("*"), key=lambda x: x.as_posix()):
-            if p.is_dir() or any(part in SKIP for part in p.parts):
-                continue
-            info = zipfile.ZipInfo(p.relative_to(src).as_posix(), FIXED_TS)
-            info.external_attr = 0o644 << 16
-            info.compress_type = zipfile.ZIP_STORED
-            zf.writestr(info, p.read_bytes())
-    return buf.getvalue()
-
-
-def simple_yaml_scalar(text: str, key: str) -> str | None:
-    m = re.search(rf'^\s*{re.escape(key)}:\s*"?([^"\n#]+?)"?\s*(?:#.*)?$', text, re.M)
-    return m.group(1).strip() if m else None
-
-
-def components() -> list[dict]:
-    comps = []
-    for kind, manifest in (("preset", "preset.yml"), ("extension", "extension.yml")):
-        for d in sorted((PLATFORM_ROOT / f"{kind}s").glob("*/")):
-            mf = d / manifest
-            if not mf.exists():
-                continue
-            text = mf.read_text(encoding="utf-8")
-            comps.append({
-                "kind": kind,
-                "dir": d,
-                "id": simple_yaml_scalar(text, "id"),
-                "name": simple_yaml_scalar(text, "name"),
-                "version": simple_yaml_scalar(text, "version"),
-                "description": simple_yaml_scalar(text, "description"),
-                "speckit_version": simple_yaml_scalar(text, "speckit_version"),
-                "templates": len(re.findall(r'type:\s*"template"', text)),
-                "commands": len(re.findall(r'type:\s*"command"', text))
-                if kind == "preset" else len(re.findall(r'^\s*- name:\s*"speckit\.', text, re.M)),
-            })
-    return comps
-
-
-def asset_name(c: dict) -> str:
-    return f"{c['id']}-{c['version']}.zip"
-
-
-def cmd_package(args: argparse.Namespace) -> int:
-    out = Path(args.out)
-    out.mkdir(parents=True, exist_ok=True)
-    for c in components():
-        data = deterministic_zip(c["dir"])
-        (out / asset_name(c)).write_bytes(data)
-        ok(f"{asset_name(c)}  sha256={hashlib.sha256(data).hexdigest()}")
-    return finish()
-
-
-def cmd_catalog(args: argparse.Namespace) -> int:
-    tag = args.tag
-    catalogs = {"preset": {}, "extension": {}}
-    for c in components():
-        digest = hashlib.sha256(deterministic_zip(c["dir"])).hexdigest()
-        rel = c["dir"].relative_to(PLATFORM_ROOT).as_posix()
-        entry = {
-            "id": c["id"],
-            "name": c["name"],
-            "version": c["version"],
-            "description": c["description"],
-            "author": "Relm SDD Guild",
-            "repository": PLATFORM_REPO,
-            "documentation": f"{PLATFORM_REPO}/blob/main/{rel}/README.md",
-            "download_url": f"{PLATFORM_REPO}/releases/download/{tag}/{asset_name(c)}",
-            "sha256": digest,
-            "license": "MIT",
-            "requires": {"speckit_version": c["speckit_version"]},
-            "provides": {"templates": c["templates"], "commands": c["commands"]},
-            "tags": ["relm", "internal"],
-        }
-        catalogs[c["kind"]][c["id"]] = entry
-    stale = 0
-    for kind, entries in catalogs.items():
-        key = f"{kind}s"
-        path = PLATFORM_ROOT / "catalogs" / f"{key}.json"
-        doc = {
-            "schema_version": "1.0",
-            "updated_at": "2026-11-21T00:00:00Z",
-            "catalog_url": f"https://raw.githubusercontent.com/{ORG}/speckit-platform/main/catalogs/{key}.json",
-            key: entries,
-        }
-        content = json.dumps(doc, indent=2) + "\n"
-        existing = path.read_text(encoding="utf-8") if path.exists() else None
-        if existing == content:
-            continue
-        if args.check:
-            fail(f"catalogs/{key}.json is stale — run `python scripts/relm_sdd.py catalog --tag {tag}`")
-            stale += 1
-        else:
-            path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(content, encoding="utf-8")
-            ok(f"wrote catalogs/{key}.json")
-    if not stale:
-        ok("catalogs are up to date")
+        b = blocks[0]
+        try:
+            semver(b["version"])
+        except ValueError:
+            fail(f"{rel}: RELM:{name} version is not semver", rel)
+        if f"presets/{preset}/templates/constitution-template.md" not in b["meta"]:
+            fail(f"{rel}: BEGIN marker 'source:' must point at this file", rel)
+        rules = re.findall(r"^### ([A-Z]+-\d+) ", b["body"], re.M)
+        checks = len(re.findall(r"^\*Check: ", b["body"], re.M))
+        if not rules:
+            fail(f"{rel}: RELM:{name} has no rules", rel)
+        elif checks < len(rules):
+            fail(f"{rel}: every rule needs a '*Check: …*' line ({len(rules)} rules, {checks} checks)", rel)
+        if preset != "relm-org" and "## Part C — Repository Amendments" not in text:
+            fail(f"{rel}: team preset must end with the Part C skeleton", rel)
+        if not failures:
+            ok(f"RELM:{name} v{b['version']}: {len(rules)} rules")
     return finish()
 
 
 # --------------------------------------------------------------------------- constitution
-def resolve_governance(arg: str | None) -> Path:
-    gov = Path(arg) if arg else PLATFORM_ROOT / "governance"
-    if not (gov / "org-baseline.md").exists():
-        print(f"governance directory not found: {gov}", file=sys.stderr)
-        sys.exit(2)
-    return gov
-
-
 def cmd_constitution_check(args: argparse.Namespace) -> int:
     path = Path(args.constitution)
-    gov = resolve_governance(args.governance)
+    platform = resolve_platform(args)
     if not path.exists():
         fail(f"constitution not found at {path} (ORG-1)", str(path))
         return finish()
     text = path.read_text(encoding="utf-8")
-    current = current_fragments(gov)
+    current = preset_blocks(platform)
     blocks = list(BLOCK_RE.finditer(text))
     names = [b["name"] for b in blocks]
 
@@ -348,40 +173,36 @@ def cmd_constitution_check(args: argparse.Namespace) -> int:
 
     for b in blocks:
         name, ver = b["name"], b["version"]
-        if name not in current:
+        cur = current.get(name)
+        if cur is None:
             fail(f"unknown governance block RELM:{name}", str(path))
             continue
-        cur_ver = current[name]["version"]
-        snap = history_path(gov, name, ver)
-        if not snap.exists():
-            fail(f"RELM:{name} v{ver} is not a released governance version", str(path))
-            continue
-        if b.group(0).strip() != snap.read_text(encoding="utf-8").strip():
-            fail(f"RELM:{name} v{ver} was edited locally — Parts A/B are read-only. "
-                 f"Run `relm_sdd.py constitution-sync --write` to restore it", str(path))
-            continue
+        cur_ver = cur["version"]
         cmaj, cmin, _ = semver(cur_ver)
         rmaj, rmin, _ = semver(ver)
-        if (rmaj, rmin) == (cmaj, cmin):
-            if ver != cur_ver:
-                warn(f"RELM:{name} v{ver} — patch {cur_ver} available (merge the sync PR)", str(path))
+        if ver == cur_ver:
+            # same version: the rules must be identical (the BEGIN marker's metadata may differ)
+            if b["body"].strip() != cur["body"].strip():
+                fail(f"RELM:{name} v{ver} differs from speckit-platform — Parts A/B are read-only. "
+                     f"Run `relm_sdd.py constitution-sync --write` to restore it", str(path))
             else:
                 ok(f"RELM:{name} v{ver} is current")
-        elif rmaj != cmaj:
-            fail(f"RELM:{name} v{ver} is a different MAJOR than current v{cur_ver}", str(path))
+        elif rmaj != cmaj or (rmaj, rmin) > (cmaj, cmin):
+            fail(f"RELM:{name} v{ver} does not match speckit-platform v{cur_ver}", str(path))
         elif cmin - rmin > args.max_minor_lag:
             fail(f"RELM:{name} v{ver} is {cmin - rmin} MINOR versions behind v{cur_ver} "
                  f"(policy allows {args.max_minor_lag})", str(path))
         else:
-            warn(f"RELM:{name} v{ver} is behind v{cur_ver} — merge the governance sync PR", str(path))
+            warn(f"RELM:{name} v{ver} is behind v{cur_ver} — merge the governance sync PR "
+                 f"(older versions are not content-checked)", str(path))
     return finish()
 
 
 def cmd_constitution_sync(args: argparse.Namespace) -> int:
     path = Path(args.constitution)
-    gov = resolve_governance(args.governance)
+    platform = resolve_platform(args)
     text = path.read_text(encoding="utf-8")
-    current = current_fragments(gov)
+    current = preset_blocks(platform)
     changed = []
 
     def repl(m: re.Match) -> str:
@@ -591,16 +412,16 @@ def main(argv: list[str] | None = None) -> int:
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = p.add_subparsers(dest="cmd", required=True)
 
-    s = sub.add_parser("build"); s.add_argument("--check", action="store_true"); s.set_defaults(fn=cmd_build)
-    s = sub.add_parser("package"); s.add_argument("--out", default="dist"); s.set_defaults(fn=cmd_package)
-    s = sub.add_parser("catalog"); s.add_argument("--tag", default="v1.0.0")
-    s.add_argument("--check", action="store_true"); s.set_defaults(fn=cmd_catalog)
+    def platform_args(s: argparse.ArgumentParser) -> None:
+        s.add_argument("--platform", help="speckit-platform checkout (default: the one holding this script)")
+        s.add_argument("--governance", help=argparse.SUPPRESS)  # pre-1.1 alias: <checkout>/governance
 
+    s = sub.add_parser("governance-lint"); platform_args(s); s.set_defaults(fn=cmd_governance_lint)
     for name, fn in (("constitution-check", cmd_constitution_check),
                      ("constitution-sync", cmd_constitution_sync)):
         s = sub.add_parser(name)
         s.add_argument("--constitution", default=".specify/memory/constitution.md")
-        s.add_argument("--governance", help="path to speckit-platform/governance (default: alongside this script)")
+        platform_args(s)
         if name == "constitution-check":
             s.add_argument("--max-minor-lag", type=int, default=1)
         else:

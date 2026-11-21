@@ -9,10 +9,8 @@ directory-scoped and have no built-in cross-repo linking):
 | `/speckit.relm.handoff RELM-<n>` | service / FE / QA repos | Reads this repo's slice from `../product-specs` and prints a handoff brief plus the exact `/speckit.specify` command to run. |
 | `/speckit.relm.pr` | any repo | Collects gate evidence (analyze, converge, tests, scenario IDs, contract versions) into the PR template. Offered automatically after `/speckit.implement`. |
 
-Install (pinned):
+Install (normally via `bootstrap/init-repo.sh`), from a checkout of speckit-platform at the pinned tag:
 
 ```bash
-specify extension add relm --from https://github.com/spec-kit-relm/speckit-platform/releases/download/v1.0.0/relm-1.0.0.zip
-# or from a local checkout while developing the extension:
 specify extension add --dev ../speckit-platform/extensions/relm
 ```

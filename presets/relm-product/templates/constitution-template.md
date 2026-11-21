@@ -1,5 +1,5 @@
 
-<!-- BEGIN RELM:TEAM-PRODUCT v1.0.0 | source: spec-kit-relm/speckit-platform/governance/overlays/product.md | owner: @spec-kit-relm/architecture | DO NOT EDIT OUTSIDE speckit-platform -->
+<!-- BEGIN RELM:TEAM-PRODUCT v1.0.0 | source: spec-kit-relm/speckit-platform/presets/relm-product/templates/constitution-template.md | owner: @spec-kit-relm/architecture | DO NOT EDIT OUTSIDE speckit-platform -->
 ## Part B — Product & Architecture Overlay (MUST)
 
 Applies to the product-level specification repository (`product-specs`) owned by

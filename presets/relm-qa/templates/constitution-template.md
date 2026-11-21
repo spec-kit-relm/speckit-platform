@@ -1,5 +1,5 @@
 
-<!-- BEGIN RELM:TEAM-QA v1.0.0 | source: spec-kit-relm/speckit-platform/governance/overlays/qa.md | owner: @spec-kit-relm/qa | DO NOT EDIT OUTSIDE speckit-platform -->
+<!-- BEGIN RELM:TEAM-QA v1.0.0 | source: spec-kit-relm/speckit-platform/presets/relm-qa/templates/constitution-template.md | owner: @spec-kit-relm/qa | DO NOT EDIT OUTSIDE speckit-platform -->
 ## Part B — Quality Engineering Overlay (MUST)
 
 Applies to quality-engineering repositories (E2E, performance, contract-verification suites)
