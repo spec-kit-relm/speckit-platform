@@ -56,4 +56,4 @@ field "Feature ID" TEXT
 field "Target repo" SINGLE_SELECT "product-specs,orders-service,inventory-service,web-storefront,e2e-tests"
 field "Phase" SINGLE_SELECT "Spec,Contract,Plan,Build,Verify,Released"
 field "Contract version" TEXT
-echo "Done. Next: protect main in each repo and require 'sdd / sdd-gates' (+ 'contracts / contract-check')."
+echo "Done. Next: bash speckit-platform/bootstrap/protect-branches.sh  (after finish-setup.sh)"
