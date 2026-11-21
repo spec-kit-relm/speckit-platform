@@ -42,4 +42,7 @@ Repositories that receive sync pull requests are listed in [`../consumers.json`]
    git tag -a v1.2.0 -m "speckit-platform v1.2.0" && git tag -f v1
    git push origin v1.2.0 && git push -f origin v1
    ```
-   Pushing `v1.2.0` triggers the sync PRs. Repositories merge them within one sprint.
+   Pushing `v1.2.0` triggers the sync PRs (needs the `RELM_GOVERNANCE_BOT_TOKEN` secret — see the
+   handbook's [organization setup](https://github.com/spec-kit-relm/sdd-handbook/blob/main/playbooks/set-up-the-organization.md#6-governance-sync-token-optional-recommended);
+   without it the workflow skips and each repository runs `constitution-sync` by hand).
+   Repositories merge their sync PR within one sprint.

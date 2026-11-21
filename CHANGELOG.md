@@ -3,6 +3,12 @@
 All notable changes to Relm's SDD toolchain. Governance block versions are listed separately
 because repositories pin them individually (see `governance/versions.json`).
 
+## [Unreleased]
+
+### Changed
+- Repository PR template: generic scenario-ID example (`RELM-<n>/…`).
+- Docs: link to the handbook's organization-setup playbook; sync-token note in `governance/README.md`.
+
 ## [1.1.0] - 2026-11-22
 
 Lean layout: rely on Spec Kit presets as the single source of the rules.

@@ -65,6 +65,10 @@ python ../speckit-platform/scripts/relm_sdd.py constitution-check --platform ../
 python ../speckit-platform/scripts/relm_sdd.py spec-lint
 ```
 
+Setting up the whole organization (tags, teams, labels, project, branch protection, sync token)
+is a separate one-time task for an org owner: see the handbook's
+[Set up the organization](https://github.com/spec-kit-relm/sdd-handbook/blob/main/playbooks/set-up-the-organization.md).
+
 ### 2. Day-to-day (engineers)
 
 Nothing to do here — presets and the extension are installed in your repo. The process is in the
