@@ -4,7 +4,7 @@
 for multi-repo work, and the CI gates every Relm repository runs.**
 
 Owner: `@spec-kit-relm/sdd-guild` · Pinned Spec Kit CLI: **v1.4.3** (`SPECKIT_VERSION`) ·
-Platform version: **v1.1.0** (`VERSION`; repositories use the floating tag `v1`)
+Platform version: **v1.1.1** (`VERSION`; repositories use the floating tag `v1`)
 
 > New here? Read [`sdd-handbook`](https://github.com/spec-kit-relm/sdd-handbook) first: it explains
 > the process. This repository holds the **machinery** that makes the process the default.
@@ -64,6 +64,10 @@ python ../speckit-platform/scripts/relm_sdd.py agent-files-check
 python ../speckit-platform/scripts/relm_sdd.py constitution-check --platform ../speckit-platform
 python ../speckit-platform/scripts/relm_sdd.py spec-lint
 ```
+
+Setting up the whole organization (tags, teams, labels, project, branch protection, sync token)
+is a separate one-time task for an org owner: see the handbook's
+[Set up the organization](https://github.com/spec-kit-relm/sdd-handbook/blob/main/playbooks/set-up-the-organization.md).
 
 ### 2. Day-to-day (engineers)
 

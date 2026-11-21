@@ -3,6 +3,16 @@
 All notable changes to Relm's SDD toolchain. Governance block versions are listed separately
 because repositories pin them individually (see `governance/versions.json`).
 
+## [1.1.1] - 2026-11-22
+
+### Fixed
+- `sdd-gates / pr-check` reads the PR body and labels at run time. Previously a run triggered by
+  `opened` could start after the lane label was added and fail on the stale event payload.
+
+### Changed
+- Repository PR template: generic scenario-ID example (`RELM-<n>/…`).
+- Docs: link to the handbook's organization-setup playbook; sync-token note in `governance/README.md`.
+
 ## [1.1.0] - 2026-11-22
 
 Lean layout: rely on Spec Kit presets as the single source of the rules.

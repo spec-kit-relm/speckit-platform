@@ -61,9 +61,15 @@ jobs:
       - name: pr-check
         if: github.event_name == 'pull_request'
         env:
-          PR_BODY: ${{ github.event.pull_request.body }}
-          PR_LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
+          # Read body and labels at run time, not from the triggering event: a run queued by
+          # `opened` can start after labels were added, and would otherwise judge a stale PR.
+          PR_BODY="$(gh api "repos/$REPO/pulls/$PR_NUMBER" --jq '.body // ""')"
+          PR_LABELS="$(gh api "repos/$REPO/pulls/$PR_NUMBER" --jq '[.labels[].name]')"
+          export PR_BODY PR_LABELS
           flag=""
           [ "${{ inputs.require-local-spec }}" = "true" ] && flag="--require-spec"
           kind=service
