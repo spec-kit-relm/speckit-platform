@@ -33,16 +33,27 @@ for r in "${REPOS[@]}"; do
 done
 
 echo "==> project"
-if ! gh project list --owner "$ORG" --format json | grep -q '"Product Delivery"'; then
-  num=$(gh project create --owner "$ORG" --title "Product Delivery" --format json | python3 -c 'import json,sys;print(json.load(sys.stdin)["number"])')
-  gh project field-create "$num" --owner "$ORG" --name "Feature ID" --data-type TEXT
-  gh project field-create "$num" --owner "$ORG" --name "Repository" --data-type SINGLE_SELECT \
-    --single-select-options "product-specs,orders-service,inventory-service,web-storefront,e2e-tests"
-  gh project field-create "$num" --owner "$ORG" --name "Phase" --data-type SINGLE_SELECT \
-    --single-select-options "Spec,Contract,Plan,Build,Verify,Released"
-  gh project field-create "$num" --owner "$ORG" --name "Contract version" --data-type TEXT
+# Idempotent: creates the project if missing, then any missing field. Note that "Repository",
+# "Title", "Status", "Assignees", "Labels", "Milestone" … are built-in (reserved) field names.
+num=$(gh project list --owner "$ORG" --format json --jq '.projects[] | select(.title=="Product Delivery") | .number' | head -1)
+if [ -z "$num" ]; then
+  num=$(gh project create --owner "$ORG" --title "Product Delivery" --format json --jq '.number')
   echo "  created project #$num"
 else
-  echo "  project exists"
+  echo "  project #$num exists"
 fi
+fields=$(gh project field-list "$num" --owner "$ORG" --format json --jq '.fields[].name')
+field() { # name type [options]
+  if grep -qx "$1" <<<"$fields"; then echo "  field '$1' exists"; return; fi
+  if [ -n "${3:-}" ]; then
+    gh project field-create "$num" --owner "$ORG" --name "$1" --data-type "$2" --single-select-options "$3" >/dev/null
+  else
+    gh project field-create "$num" --owner "$ORG" --name "$1" --data-type "$2" >/dev/null
+  fi
+  echo "  created field '$1'"
+}
+field "Feature ID" TEXT
+field "Target repo" SINGLE_SELECT "product-specs,orders-service,inventory-service,web-storefront,e2e-tests"
+field "Phase" SINGLE_SELECT "Spec,Contract,Plan,Build,Verify,Released"
+field "Contract version" TEXT
 echo "Done. Next: protect main in each repo and require 'sdd / sdd-gates' (+ 'contracts / contract-check')."
