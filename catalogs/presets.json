@@ -12,7 +12,7 @@
       "repository": "https://github.com/spec-kit-relm/speckit-platform",
       "documentation": "https://github.com/spec-kit-relm/speckit-platform/blob/main/presets/relm-backend/README.md",
       "download_url": "https://github.com/spec-kit-relm/speckit-platform/releases/download/v1.0.0/relm-backend-1.0.0.zip",
-      "sha256": "5571fb58ee56d230424a9911804064d29f7c55f75a2f4c3fed8510fe482afbbe",
+      "sha256": "2a305e02011f97c72efe3551f4e9e89753a9594e28d48be0b7ed815c8d25bbe2",
       "license": "MIT",
       "requires": {
         "speckit_version": ">=1.2.0"
@@ -35,7 +35,7 @@
       "repository": "https://github.com/spec-kit-relm/speckit-platform",
       "documentation": "https://github.com/spec-kit-relm/speckit-platform/blob/main/presets/relm-frontend/README.md",
       "download_url": "https://github.com/spec-kit-relm/speckit-platform/releases/download/v1.0.0/relm-frontend-1.0.0.zip",
-      "sha256": "ff168af043cb8bfacf049f1180b7aad521841e187535f1fb2894456530d4d70c",
+      "sha256": "09918aa499324fa11f56f30183a134a97852266888f5e545e01e24509b5192dd",
       "license": "MIT",
       "requires": {
         "speckit_version": ">=1.2.0"
@@ -58,7 +58,7 @@
       "repository": "https://github.com/spec-kit-relm/speckit-platform",
       "documentation": "https://github.com/spec-kit-relm/speckit-platform/blob/main/presets/relm-org/README.md",
       "download_url": "https://github.com/spec-kit-relm/speckit-platform/releases/download/v1.0.0/relm-org-1.0.0.zip",
-      "sha256": "0aa79ad3d7d79204937c7e65109b81b18e33d057b702073ebd4e285a2b8a7f29",
+      "sha256": "4faf185fc91af29a974da487f4186bb05837cb5e4833f3131a660cde0face9fa",
       "license": "MIT",
       "requires": {
         "speckit_version": ">=1.2.0"
@@ -81,7 +81,7 @@
       "repository": "https://github.com/spec-kit-relm/speckit-platform",
       "documentation": "https://github.com/spec-kit-relm/speckit-platform/blob/main/presets/relm-product/README.md",
       "download_url": "https://github.com/spec-kit-relm/speckit-platform/releases/download/v1.0.0/relm-product-1.0.0.zip",
-      "sha256": "dd7d7768d95aa0f12ba4cde7a4bd5b8c5c54c7b715fbbec310b76c5a2cd86a26",
+      "sha256": "172d47be3e473214149247e0a25e0bba04d1dfb4c809a0e0e69726f9bd1e06a3",
       "license": "MIT",
       "requires": {
         "speckit_version": ">=1.2.0"
@@ -104,7 +104,7 @@
       "repository": "https://github.com/spec-kit-relm/speckit-platform",
       "documentation": "https://github.com/spec-kit-relm/speckit-platform/blob/main/presets/relm-qa/README.md",
       "download_url": "https://github.com/spec-kit-relm/speckit-platform/releases/download/v1.0.0/relm-qa-1.0.0.zip",
-      "sha256": "bfeeb1fccbef347493257b4bdb70557c72110f7624aaa2b59c7cc385a63d1a0d",
+      "sha256": "1429b9feecba32b1399ba63bc46d09718e0ffe7f2a2e0d3b7d1841843fa72d36",
       "license": "MIT",
       "requires": {
         "speckit_version": ">=1.2.0"

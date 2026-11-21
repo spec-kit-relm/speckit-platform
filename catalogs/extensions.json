@@ -12,7 +12,7 @@
       "repository": "https://github.com/spec-kit-relm/speckit-platform",
       "documentation": "https://github.com/spec-kit-relm/speckit-platform/blob/main/extensions/relm/README.md",
       "download_url": "https://github.com/spec-kit-relm/speckit-platform/releases/download/v1.0.0/relm-1.0.0.zip",
-      "sha256": "e8df11bb24e3421fb1dbf2f2af5b35ff491f55f411940790165f76c96ec3862a",
+      "sha256": "4fc8c7bc794f7e91edab03e3949dcd035996d522513994ff6d8d3d4019e3b961",
       "license": "MIT",
       "requires": {
         "speckit_version": ">=1.2.0"

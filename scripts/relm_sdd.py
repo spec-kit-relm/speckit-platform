@@ -213,13 +213,14 @@ SKIP = {".DS_Store", "__pycache__"}
 
 def deterministic_zip(src: Path) -> bytes:
     buf = io.BytesIO()
-    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+    # ZIP_STORED + fixed modes: byte-identical on every machine (deflate output varies across zlib builds)
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_STORED) as zf:
         for p in sorted(src.rglob("*"), key=lambda x: x.as_posix()):
             if p.is_dir() or any(part in SKIP for part in p.parts):
                 continue
             info = zipfile.ZipInfo(p.relative_to(src).as_posix(), FIXED_TS)
-            info.external_attr = (0o755 if os.access(p, os.X_OK) else 0o644) << 16
-            info.compress_type = zipfile.ZIP_DEFLATED
+            info.external_attr = 0o644 << 16
+            info.compress_type = zipfile.ZIP_STORED
             zf.writestr(info, p.read_bytes())
     return buf.getvalue()
 
