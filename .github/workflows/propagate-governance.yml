@@ -17,13 +17,22 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       repos: ${{ steps.r.outputs.repos }}
+      enabled: ${{ steps.r.outputs.enabled }}
     steps:
       - uses: actions/checkout@v4
       - id: r
-        run: echo "repos=$(python -c 'import json;print(json.dumps(json.load(open("consumers.json"))["repositories"]))')" >> "$GITHUB_OUTPUT"
+        env:
+          HAS_TOKEN: ${{ secrets.RELM_GOVERNANCE_BOT_TOKEN != '' }}
+        run: |
+          echo "repos=$(python -c 'import json;print(json.dumps(json.load(open("consumers.json"))["repositories"]))')" >> "$GITHUB_OUTPUT"
+          echo "enabled=$HAS_TOKEN" >> "$GITHUB_OUTPUT"
+          if [ "$HAS_TOKEN" != "true" ]; then
+            echo "::notice::RELM_GOVERNANCE_BOT_TOKEN is not set — skipping sync PRs. Run constitution-sync in each repo by hand, or add the secret."
+          fi
 
   sync:
     needs: list
+    if: needs.list.outputs.enabled == 'true'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
